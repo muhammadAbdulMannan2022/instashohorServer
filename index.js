@@ -50,10 +50,27 @@ async function run() {
         res.status(500).send({ message: "Internal server error" });
       }
     });
-    app.post("/posts", async (req, res) => {
+    app.post("/createpost", async (req, res) => {
       const post = req?.body;
       const resault = await postsCollectionDb.insertOne(post);
       res.status(201).send({ message: "content is posted." });
+    });
+
+    app.get("/posts", async (req, res) => {
+      const skip = parseInt(req.query.skip, 10) || 0; // Get skip from query params and convert to integer
+      try {
+        const posts = await postsCollectionDb
+          .find()
+          .sort({ timestamp: -1 })
+          .skip(skip * 10) // Skip 10 posts based on the count
+          .limit(10) // Limit to 10 posts
+          .toArray();
+
+        res.status(200).send(posts);
+      } catch (error) {
+        console.error("Error fetching posts:", error);
+        res.status(500).send({ message: "An error occurred in getting data" });
+      }
     });
 
     // Default route
