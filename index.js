@@ -1,12 +1,20 @@
 const express = require("express");
+const http = require("http");
+const socketIo = require("socket.io");
 const cors = require("cors");
 const dotenv = require("dotenv");
 const { MongoClient, ServerApiVersion } = require("mongodb");
+const { log } = require("console");
 
 dotenv.config();
 const app = express();
+const server = http.createServer(app);
 const port = process.env.PORT || 5000;
-
+const io = socketIo(server, {
+  cors: {
+    origin: "*",
+  },
+});
 // Middleware
 app.use(cors());
 app.use(express.json());
@@ -25,10 +33,16 @@ async function run() {
     // Connect the client to the server
     await client.connect();
     console.log("Connected to MongoDB");
-
     const database = client.db("Instashohor");
     const userCollectionDb = database.collection("Users");
     const postsCollectionDb = database.collection("posts");
+    // io connection
+    io.on("connection", (socket) => {
+      console.log("New user connected");
+      socket.on("disconnect", () => {
+        console.log("user disconnected");
+      });
+    });
 
     // Route to handle user creation
     app.post("/users", async (req, res) => {
@@ -53,6 +67,7 @@ async function run() {
     app.post("/createpost", async (req, res) => {
       const post = req?.body;
       const resault = await postsCollectionDb.insertOne(post);
+      io.emit("receivePost", post);
       res.status(201).send({ message: "content is posted." });
     });
 
@@ -90,6 +105,6 @@ async function run() {
 run().catch(console.dir);
 
 // Start the server
-app.listen(port, () => {
+server.listen(port, () => {
   console.log(`Server is running on port: ${port}`);
 });
