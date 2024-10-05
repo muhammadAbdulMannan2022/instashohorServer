@@ -73,6 +73,15 @@ async function run() {
         res.status(500).send({ message: "Internal server error" });
       }
     });
+    app.get("/getusers", async (req, res) => {
+      const users = await userCollectionDb
+        .find({}, { projection: { _id: 1, uid: 1, name: 1, avatar: 1 } })
+        .toArray();
+      if (!users) {
+        res.status(404).send("error");
+      }
+      res.send(users);
+    });
     app.post("/createpost", async (req, res) => {
       const post = req?.body;
       const resault = await postsCollectionDb.insertOne(post);
