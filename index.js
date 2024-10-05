@@ -83,18 +83,8 @@ async function run() {
       const { postId, updates } = req.body;
       try {
         // Log the postId and updates for clarity
-        console.log("Post ID for update:", postId);
-        console.log("Updates:", updates);
-        // Fetch the post to ensure that it exists
-        const post = await postsCollectionDb.findOne({
-          _id: new ObjectId(postId),
-        });
-        if (!post) {
-          return res
-            .status(404)
-            .send({ message: "Post not found (during fetch)" });
-        }
-        console.log("Fetched post for update:", post);
+        // console.log("Post ID for update:", postId);
+        // console.log("Updates:", updates);
         // Perform the update
         const updatedPost = await postsCollectionDb.findOneAndUpdate(
           { _id: new ObjectId(postId) },
@@ -108,9 +98,10 @@ async function run() {
             .send({ message: "Post not found (during update)" });
         }
         // Log the updated post for debugging
-        console.log("Updated post:", updatedPost);
+        // console.log("Updated post:", updatedPost);
         // Send the updated post back to the client
-        res.send(updatedPost.value);
+        io.emit("postupdate", updatedPost);
+        res.send(updatedPost);
       } catch (error) {
         // Handle errors and log them for debugging
         console.error("Error updating post:", error);
