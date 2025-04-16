@@ -12,16 +12,19 @@ const server = http.createServer(app);
 const port = process.env.PORT || 5000;
 const io = socketIo(server, {
   cors: {
-    origin: "http://localhost:5173", // Match your front-end URL
-    methods: ["GET", "POST"],
+    origin: "http://localhost:5173", // Match your frontend URL
+    methods: ["GET", "POST", "PUT"],
     credentials: true,
   },
+  transports: ["websocket", "polling"], // Ensure WebSocket transport is prioritized
 });
+
 const corsOptions = {
   origin: "http://localhost:5173", // Specify your front-end URL here
-  methods: ["GET", "POST"],
+  methods: ["GET", "POST", "PUT"],
   allowedHeaders: ["Content-Type"],
   credentials: true,
+  transports: ["websocket", "polling"],
 };
 // Middleware
 app.use(cors(corsOptions));
@@ -81,6 +84,20 @@ async function run() {
         res.status(404).send("error");
       }
       res.send(users);
+    });
+    app.put("/updateprofile", async (req, res) => {
+      const { userId, profileData } = req.body;
+      const updated = await userCollectionDb.findOneAndUpdate(
+        { uid: userId },
+        { $set: profileData },
+        { returnDocument: "after" }
+      );
+      if (updated) {
+        // io.emit("userUpdate", updated);
+        res.send(updated); // ✅ sends a response
+      }
+
+      res.status(404).send({ message: "we don't found the user to update" }); // ❌ this also runs if `updated` is truthy, causing double response
     });
     app.post("/createpost", async (req, res) => {
       const post = req?.body;
