@@ -87,17 +87,26 @@ async function run() {
     });
     app.put("/updateprofile", async (req, res) => {
       const { userId, profileData } = req.body;
-      const updated = await userCollectionDb.findOneAndUpdate(
-        { uid: userId },
-        { $set: profileData },
-        { returnDocument: "after" }
-      );
-      if (updated) {
-        // io.emit("userUpdate", updated);
-        res.send(updated); // ✅ sends a response
-      }
 
-      res.status(404).send({ message: "we don't found the user to update" }); // ❌ this also runs if `updated` is truthy, causing double response
+      try {
+        const updated = await userCollectionDb.findOneAndUpdate(
+          { uid: userId },
+          { $set: profileData },
+          { returnDocument: "after" }
+        );
+
+        if (updated) {
+          io.emit("userUpdate", updated);
+          return res.send(updated); // ✅ Return to stop further execution
+        }
+
+        return res
+          .status(404)
+          .send({ message: "We don't found the user to update" });
+      } catch (error) {
+        console.error("Error updating profile:", error);
+        return res.status(500).send({ message: "Internal server error" });
+      }
     });
     app.post("/createpost", async (req, res) => {
       const post = req?.body;
