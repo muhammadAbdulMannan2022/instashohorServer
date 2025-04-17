@@ -76,6 +76,13 @@ async function run() {
         res.status(500).send({ message: "Internal server error" });
       }
     });
+    app.get("/user", async (req, res) => {
+      const userId = req.query?.uid;
+      const user = await userCollectionDb?.findOne({ uid: userId });
+      // console.log(user);
+
+      res.send({ respon: "ok", user });
+    });
     app.get("/getusers", async (req, res) => {
       const users = await userCollectionDb
         .find({}, { projection: { _id: 1, uid: 1, name: 1, avatar: 1 } })
