@@ -4,7 +4,6 @@ const socketIo = require("socket.io");
 const cors = require("cors");
 const dotenv = require("dotenv");
 const { MongoClient, ServerApiVersion, ObjectId } = require("mongodb");
-const { log } = require("console");
 
 dotenv.config();
 const app = express();
@@ -12,7 +11,7 @@ const server = http.createServer(app);
 const port = process.env.PORT || 5000;
 const io = socketIo(server, {
   cors: {
-    origin: "http://localhost:5173", // Match your frontend URL
+    origin: "https://instashohor-31280.web.app", // Match your frontend URL
     methods: ["GET", "POST", "PUT"],
     credentials: true,
   },
@@ -20,7 +19,7 @@ const io = socketIo(server, {
 });
 
 const corsOptions = {
-  origin: "http://localhost:5173", // Specify your front-end URL here
+  origin: "https://instashohor-31280.web.app", // Specify your front-end URL here
   methods: ["GET", "POST", "PUT"],
   allowedHeaders: ["Content-Type"],
   credentials: true,
