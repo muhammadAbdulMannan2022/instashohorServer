@@ -169,6 +169,34 @@ async function run() {
         res.status(500).send({ message: "An error occurred in getting data" });
       }
     });
+    // getting one user post
+    app.get("/userpost", async (req, res) => {
+      const userId = req.query.userid;
+
+      try {
+        const posts = await postsCollectionDb
+          .find(
+            { "user.userId": userId },
+            {
+              projection: {
+                _id: 1,
+                likes: 1,
+                postId: 1,
+                postMedia: 1,
+                postText: 1,
+                "user.userId": 1,
+              },
+            }
+          )
+          .toArray();
+
+        res.status(200).send(posts);
+      } catch (error) {
+        res
+          .status(500)
+          .send({ error: "Failed to fetch posts", message: error.message });
+      }
+    });
 
     // Default route
     app.get("/", (req, res) => {
